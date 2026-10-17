@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { onActivate } from "./a11y";
+import { isImeKey, onActivate } from "./a11y";
 import { useBackdropClose } from "./useBackdropClose";
 import { useLeave } from "./motion";
 import "./dialog.css";
@@ -163,6 +163,10 @@ export function RepoPicker({
     }
   };
   const onKey = (e: KeyboardEvent) => {
+    // The arrows and Enter pick an IME candidate while one is open: they are not the list's.
+    if (isImeKey(e)) {
+      return;
+    }
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActive((i) => Math.min(i + 1, repos.length - 1));

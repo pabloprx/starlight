@@ -157,6 +157,10 @@ test("the keyboard moves through the list and Enter picks", async () => {
     assert.equal(input.getAttribute("aria-activedescendant"), "repo-opt-0");
     await key(input, "ArrowDown");
     await key(input, "x");
+    // The keys that pick an IME candidate are the IME's: no move, no pick.
+    await key(input, "ArrowDown", { isComposing: true });
+    await key(input, "Enter", { isComposing: true });
+    assert.deepEqual(p.log, []);
     await key(input, "Enter");
     assert.deepEqual(p.log, [["pick", "ada/b", "github"]]);
     assert.ok(scrolled.includes("repo-opt-2"));

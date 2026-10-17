@@ -163,11 +163,16 @@ export async function change(el, value) {
   });
 }
 
-// key fires a keydown on an element.
-export async function key(el, k) {
+// key fires a keydown on an element; extra adds fields such as isComposing.
+export async function key(el, k, extra = {}) {
   await act(() => {
     el.dispatchEvent(
-      new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }),
+      new KeyboardEvent("keydown", {
+        key: k,
+        bubbles: true,
+        cancelable: true,
+        ...extra,
+      }),
     );
   });
 }

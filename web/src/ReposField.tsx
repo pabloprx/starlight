@@ -4,6 +4,7 @@
 import { useState } from "preact/hooks";
 import { t, tf } from "./i18n";
 import { choose } from "./choose";
+import { isImeKey } from "./a11y";
 import {
   addRepoProblem,
   repoDraftOf,
@@ -385,7 +386,7 @@ export function AddRepo({
             setProblem("");
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !isImeKey(e)) {
               e.preventDefault();
               void add();
             }

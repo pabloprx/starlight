@@ -165,6 +165,7 @@ test("adding a repository: refused when not a URL or taken, emptied once added",
   // Another key does nothing.
   await type(input, "https://x.io/u/web.git");
   await key(input, "a");
+  await key(input, "Enter", { isComposing: true });
   assert.equal(added.length, 0);
 
   // Refused by the caller: the field keeps the URL.
