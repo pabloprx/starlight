@@ -204,8 +204,12 @@ func simpleFolderName(name string) bool {
 	return !strings.ContainsAny(name, badNameChars)
 }
 
-// systemFolder reports whether dir is one of the system's trees or inside one.
+// systemFolder reports whether dir is one of the system's trees or inside one. The user's own
+// temporary folder is not, even where the system keeps it inside one (macOS: /var/folders).
 func systemFolder(dir string) bool {
+	if pathWithinOrSame(os.TempDir(), dir) {
+		return false
+	}
 	for _, tree := range systemTrees() {
 		if pathWithinOrSame(tree, dir) {
 			return true
@@ -291,14 +295,20 @@ func (s *Server) externalProjectFolder(w http.ResponseWriter, raw string) (strin
 			dir = real
 		}
 	}
+	// The workspace is compared resolved too: reached through a link (on macOS, anything under
+	// /var or /tmp), it would otherwise be a different path from the folder.
+	ws := s.opts.WorkspaceDir
+	if real, err := filepath.EvalSymlinks(ws); err == nil {
+		ws = real
+	}
 	switch {
 	case !found:
 		writeError(w, http.StatusBadRequest, "that folder does not exist")
 	case filepath.Dir(dir) == dir:
 		writeError(w, http.StatusBadRequest, "the root of the disk cannot be a project")
-	case s.opts.WorkspaceDir != "" && pathWithinOrSame(dir, s.opts.WorkspaceDir):
+	case ws != "" && pathWithinOrSame(dir, ws):
 		writeError(w, http.StatusBadRequest, "the workspace itself (or a folder around it) cannot be a project")
-	case s.opts.WorkspaceDir != "" && pathWithinOrSame(s.opts.WorkspaceDir, dir) &&
+	case ws != "" && pathWithinOrSame(ws, dir) &&
 		reservedFolders[strings.ToLower(filepath.Base(dir))]:
 		writeError(w, http.StatusBadRequest, "that folder is where motita keeps its sessions and shared repositories")
 	default:
